@@ -2,4 +2,4 @@ credentials.json
 token.pickle
 venv/
 __pycache__/
-*.pyc
+*.pyccredentials.json
