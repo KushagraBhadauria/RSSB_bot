@@ -7,7 +7,7 @@ import os, base64, json, tempfile
 
 
 # =============================================
-TELEGRAM_TOKEN = "8623631025:AAHeZZMXh9Tg_g7NyypbrpGdBMT6PrJSBPU"
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "8623631025:AAHeZZMXh9Tg_g7NyypbrpGdBMT6PrJSBPU")
 SHEET_NAME     = "AV Audio Equipment Area- KANPUR"
 # =============================================
 
@@ -61,15 +61,12 @@ def get_sheet():
     scope = ["https://spreadsheets.google.com/feeds",
              "https://www.googleapis.com/auth/drive"]
 
-    # Production: env var se credentials lo
     creds_b64 = os.environ.get("GOOGLE_CREDENTIALS_B64")
     if creds_b64:
-        creds_json = base64.b64decode(creds_b64).decode("utf-8")
-        creds_dict = json.loads(creds_json)
-        creds  = Credentials.from_service_account_info(creds_dict, scopes=scope)
+        creds_dict = json.loads(base64.b64decode(creds_b64).decode("utf-8"))
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
     else:
-        # Local: seedha file se lo
-        creds  = Credentials.from_service_account_file("credentials.json", scopes=scope)
+        creds = Credentials.from_service_account_file("credentials.json", scopes=scope)
 
     client = gspread.authorize(creds)
     return client.open(SHEET_NAME).sheet1
