@@ -3,6 +3,8 @@ from google.oauth2.service_account import Credentials
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 from datetime import datetime
+import os, base64, json, tempfile
+
 
 # =============================================
 TELEGRAM_TOKEN = "8623631025:AAHeZZMXh9Tg_g7NyypbrpGdBMT6PrJSBPU"
@@ -45,15 +47,32 @@ VALID_ITEMS = {
 # ─────────────────────────────────────────
 # SHEET
 # ─────────────────────────────────────────
+# def get_sheet():
+#     scope = [
+#         "https://spreadsheets.google.com/feeds",
+#         "https://www.googleapis.com/auth/drive",
+#     ]
+#     creds  = Credentials.from_service_account_file("credentials.json", scopes=scope)
+#     client = gspread.authorize(creds)
+#     return client.open(SHEET_NAME).sheet1
+
+
 def get_sheet():
-    scope = [
-        "https://spreadsheets.google.com/feeds",
-        "https://www.googleapis.com/auth/drive",
-    ]
-    creds  = Credentials.from_service_account_file("credentials.json", scopes=scope)
+    scope = ["https://spreadsheets.google.com/feeds",
+             "https://www.googleapis.com/auth/drive"]
+
+    # Production: env var se credentials lo
+    creds_b64 = os.environ.get("GOOGLE_CREDENTIALS_B64")
+    if creds_b64:
+        creds_json = base64.b64decode(creds_b64).decode("utf-8")
+        creds_dict = json.loads(creds_json)
+        creds  = Credentials.from_service_account_info(creds_dict, scopes=scope)
+    else:
+        # Local: seedha file se lo
+        creds  = Credentials.from_service_account_file("credentials.json", scopes=scope)
+
     client = gspread.authorize(creds)
     return client.open(SHEET_NAME).sheet1
-
 
 # ─────────────────────────────────────────
 # HELPERS
@@ -538,7 +557,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📖 Full Guide:\n\n"
         "/centres\n→ Saare centres (P+B = Parmarthi+Baal dono)\n\n"
         "/check ACHALDA\n→ Centre ki poori detail\n\n"
-        "/give ACHALDA microphone 2 Kushagra \n→ Mic -2, Kushagra  ko diya\n"
+        "/give ACHALDA microphone 2 Ankit \n→ Mic -2, Ankit ko diya\n"
         "  BAAL bhi hai toh button aayega\n\n"
         "/return ACHALDA microphone 2\n→ Mic +2 wapas aayi\n\n"
         "/totalstock\n→ Poore area ka total stock\n\n"
